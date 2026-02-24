@@ -1,6 +1,8 @@
 package barber.agenda.service;
 
 import barber.agenda.entity.Cliente;
+import barber.agenda.exception.BusinessException;
+import barber.agenda.exception.CampoObrigatorioException;
 import barber.agenda.repository.ClienteRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,12 +22,12 @@ public class ClienteService {
         // Regra: Validar se o CPF já existe
         Optional<Cliente> clienteExistente = repository.findByCpf(cliente.getCpf());
         if (clienteExistente.isPresent()) {
-            throw new RuntimeException("Já existe um cliente cadastrado com este CPF.");
+            throw new BusinessException("Já existe um cliente cadastrado com este CPF.");
         }
 
         // Regra: Validar campos obrigatórios
         if (cliente.getNome() == null || cliente.getNome().isEmpty()) {
-            throw new RuntimeException("O nome do cliente é obrigatório.");
+            throw new CampoObrigatorioException("nome do cliente.");
         }
 
         return repository.save(cliente);

@@ -1,6 +1,8 @@
 package barber.agenda.service;
 
 import barber.agenda.entity.Barbeiro;
+import barber.agenda.exception.BusinessException;
+import barber.agenda.exception.CampoObrigatorioException;
 import barber.agenda.repository.BarbeiroRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,7 +20,11 @@ public class BarbeiroService {
     public Barbeiro cadastrar(Barbeiro barbeiro) {
         // Regra: Garantir que o nome do barbeiro foi preenchido
         if (barbeiro.getNome() == null || barbeiro.getNome().trim().isEmpty()) {
-            throw new RuntimeException("O nome do barbeiro não pode estar vazio.");
+            throw new CampoObrigatorioException("nome");
+        }
+        // Se o barbeiro já existe, lançamos a BusinessException
+        if (repository.existsByNome(barbeiro.getNome())) {
+            throw new BusinessException("Este barbeiro já está cadastrado.");
         }
 
         return repository.save(barbeiro);
