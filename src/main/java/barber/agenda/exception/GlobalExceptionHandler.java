@@ -3,10 +3,8 @@ package barber.agenda.exception;
 
 import jakarta.annotation.Resource;
 import org.springframework.context.MessageSource;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
@@ -48,6 +46,19 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         // Usando seu método privado para manter o padrão
         ResponseError error = responseError(e.getMessage(), HttpStatus.BAD_REQUEST);
         return handleExceptionInternal(e, error, headers(), HttpStatus.BAD_REQUEST, request);
+    }
+    @Override
+    protected ResponseEntity<Object> handleMethodArgumentNotValid(
+            MethodArgumentNotValidException ex,
+            HttpHeaders headers,
+            HttpStatusCode status,
+            WebRequest request) {
+
+        // Pega o primeiro erro de validação encontrado
+        String mensagemErro = ex.getBindingResult().getAllErrors().get(0).getDefaultMessage();
+
+        ResponseError error = responseError(mensagemErro, HttpStatus.BAD_REQUEST);
+        return handleExceptionInternal(ex, error, headers(), HttpStatus.BAD_REQUEST, request);
     }
 }
 

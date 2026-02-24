@@ -1,5 +1,6 @@
 package barber.agenda.service;
 
+import barber.agenda.entity.Barbeiro;
 import barber.agenda.entity.Cliente;
 import barber.agenda.exception.BusinessException;
 import barber.agenda.exception.CampoObrigatorioException;
@@ -35,5 +36,9 @@ public class ClienteService {
 
     public List<Cliente> listarTodos() {
         return repository.findAll();
+    }
+    public Cliente buscarPorId(Long id) {
+        return repository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Cliente não encontrado."));
     }
 }
