@@ -30,26 +30,25 @@ public class LoginController {
 
     @PostMapping
     public ResponseEntity<LoginResponseDTO> logar(@RequestBody @Valid LoginRequestDTO loginData) {
-        // 1. Busca o usuário pelo username usando o JOIN FETCH que você configurou no Repository
+        // 1. Busca o usuário
         User user = userRepository.findByUsername(loginData.username());
 
-        // 2. Verifica se o usuário existe
+        // 2. Verifica se existe
         if (user == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
-        // 3. Compara a senha enviada (plana) com a do banco (criptografada)
+        // 3. Compara senhas
         boolean senhaValida = passwordEncoder.matches(loginData.password(), user.getPassword());
 
         if (!senhaValida) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
-        // 4. Gera o Token JWT contendo as Roles (permissões) do usuário
-        String token = jwtService.gerarToken(user.getUsername(), user.getRoles());
+        // 4. AJUSTADO: Chamando o método correto com Claims extras para as Roles
+        // Certifique-se de que o método no JWTService aceite esses dois parâmetros
+        String token = jwtService.generateToken(user.getUsername(), user.getRoles());
 
-        // 5. Retorna o DTO de resposta com o Token
         return ResponseEntity.ok(new LoginResponseDTO(token));
     }
-
 }

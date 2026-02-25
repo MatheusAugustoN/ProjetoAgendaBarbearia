@@ -23,6 +23,7 @@ services:
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: 1234
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
-
+      API_SECURITY_TOKEN_SECRET: "sua_chave_secreta_com_pelo_menos_32_caracteres_123456"
 volumes:
   pgdata:
+

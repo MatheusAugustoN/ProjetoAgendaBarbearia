@@ -7,11 +7,14 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 import io.jsonwebtoken.Claims;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 
+@Component
 public class JWTFilter extends OncePerRequestFilter {
     private final JWTService jwtService;
 
@@ -26,16 +29,27 @@ public class JWTFilter extends OncePerRequestFilter {
         String token = request.getHeader("Authorization");
 
         if (token != null && token.startsWith("Bearer ")) {
+            token = token.replace("Bearer ", "");
             try {
-                Claims claims = jwtService.validarETerClaims(token.replace("Bearer ", ""));
-                String username = claims.getSubject();
-                List<String> roles = (List<String>) claims.get("roles");
+                // Usamos o método genérico que criamos no JWTService para pegar todos os Claims
+                String username = jwtService.extractUsername(token);
 
-                var authorities = roles.stream().map(SimpleGrantedAuthority::new).toList();
+                if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+                    // Extraímos as roles do payload do token
+                    List<String> roles = jwtService.extractClaim(token, claims -> {
+                        List<?> rawRoles = claims.get("roles", List.class);
+                        return rawRoles != null ? (List<String>) rawRoles : Collections.emptyList();
+                    });
 
-                var auth = new UsernamePasswordAuthenticationToken(username, null, authorities);
-                SecurityContextHolder.getContext().setAuthentication(auth);
+                    var authorities = roles.stream()
+                            .map(SimpleGrantedAuthority::new)
+                            .toList();
+
+                    var auth = new UsernamePasswordAuthenticationToken(username, null, authorities);
+                    SecurityContextHolder.getContext().setAuthentication(auth);
+                }
             } catch (Exception e) {
+                // Log de erro útil para debug
                 response.setStatus(HttpServletResponse.SC_FORBIDDEN);
                 return;
             }
