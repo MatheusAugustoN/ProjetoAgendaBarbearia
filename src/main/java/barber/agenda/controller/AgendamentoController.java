@@ -6,11 +6,14 @@ import barber.agenda.entity.Agendamento;
 import barber.agenda.service.AgendamentoService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -31,15 +34,13 @@ public class AgendamentoController {
     }
 
     @GetMapping
-    public ResponseEntity<List<AgendamentoResponseDTO>> listarTodos() {
-        List<Agendamento> agendamentos = service.listarTodos();
+    public ResponseEntity<Page<AgendamentoResponseDTO>> listarTodos(
+            @PageableDefault(size = 10, sort = "dataHora", direction = Sort.Direction.ASC) Pageable pageable) {
 
-        // Converte a lista de entidades para DTOs de resposta
-        List<AgendamentoResponseDTO> dtos = agendamentos.stream()
-                .map(AgendamentoResponseDTO::new)
-                .toList();
+        // O service agora retorna Page<AgendamentoResponseDTO> já convertido
+        Page<AgendamentoResponseDTO> pagina = service.listarTodos(pageable);
 
-        return ResponseEntity.ok(dtos);
+        return ResponseEntity.ok(pagina);
     }
 
     @GetMapping("/{id}")
@@ -47,27 +48,17 @@ public class AgendamentoController {
         Agendamento agendamento = service.buscarPorId(id);
         return ResponseEntity.ok(new AgendamentoResponseDTO(agendamento));
     }
-
-    @PostMapping("/cancelar/{id}")
-    public ResponseEntity<List<AgendamentoResponseDTO>> cancelar(@PathVariable Long id) {
-        List<Agendamento> lagendamento = service.cancelarAgendamentoPorId(id);
-        // 2. Convertemos a lista de Entities para uma lista de ResponseDTOs
-        List<AgendamentoResponseDTO> dtos = lagendamento.stream()
-                .map(AgendamentoResponseDTO::new)
-                .toList();
-        return ResponseEntity.ok(dtos);
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Page<AgendamentoResponseDTO>> cancelar(
+            @PathVariable Long id,
+            @PageableDefault(size = 10) Pageable pageable) {
+        return ResponseEntity.ok(service.cancelarAgendamentoPorId(id, pageable));
     }
 
-    @GetMapping("/filtro")
-    public ResponseEntity<List<AgendamentoResponseDTO>> listarPorData(
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate data) {
-
-        List<Agendamento> agendamentos = service.listarPorData(data);
-
-        List<AgendamentoResponseDTO> dtos = agendamentos.stream()
-                .map(AgendamentoResponseDTO::new)
-                .toList();
-
-        return ResponseEntity.ok(dtos);
+    @GetMapping("/data")
+    public ResponseEntity<Page<AgendamentoResponseDTO>> buscarPorData(
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate data,
+            @PageableDefault(size = 10, sort = "dataHora") Pageable pageable) {
+        return ResponseEntity.ok(service.listarPorData(data, pageable));
     }
 }

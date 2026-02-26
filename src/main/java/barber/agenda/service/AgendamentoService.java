@@ -1,6 +1,7 @@
 package barber.agenda.service;
 
 import barber.agenda.dto.AgendamentoRequestDTO;
+import barber.agenda.dto.AgendamentoResponseDTO;
 import barber.agenda.entity.Agendamento;
 import barber.agenda.entity.Barbeiro;
 import barber.agenda.entity.Cliente;
@@ -12,8 +13,11 @@ import barber.agenda.repository.AgendamentoRepository;
 import barber.agenda.repository.BarbeiroRepository;
 import barber.agenda.repository.ClienteRepository;
 import jakarta.transaction.Transactional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -58,8 +62,13 @@ public class AgendamentoService {
         return agendamentoRepository.save(agendamento);
     }
 
-    public List<Agendamento> listarTodos() {
-        return agendamentoRepository.findAll();
+    public Page<AgendamentoResponseDTO> listarTodos(Pageable pageable) {
+        // 1. Busca a página de Entities no banco
+        Page<Agendamento> paginaEntities = agendamentoRepository.findAll(pageable);
+
+        // 2. Converte a página de Entities para uma página de DTOs
+        // O Java usará automaticamente aquele construtor que você criou
+        return paginaEntities.map(AgendamentoResponseDTO::new);
     }
 
     public Agendamento buscarPorId(Long id) {
@@ -67,17 +76,25 @@ public class AgendamentoService {
                 .orElseThrow(() -> new BusinessException("Agendamento não encontrado com o ID: " + id));
     }
 
-    public List<Agendamento> cancelarAgendamentoPorId(Long id) {
-        Agendamento agendamento = agendamentoRepository.findById(id)
-                .orElseThrow(() -> new BusinessException("Agendamento não encontrado."));
+    public Page<AgendamentoResponseDTO> cancelarAgendamentoPorId(Long id, Pageable pageable) {
+        // 1. Verifica se existe antes de deletar
+        if (!agendamentoRepository.existsById(id)) {
+            throw new BusinessException("Agendamento não encontrado.");
+        }
+
         agendamentoRepository.deleteById(id);
-        return listarTodos();
+
+        // 2. Retorna a lista atualizada e paginada
+        return listarTodos(pageable);
     }
-    public List<Agendamento> listarPorData(LocalDate data) {
-        // Define o início do dia (00:00:00) e o fim do dia (23:59:59)
+
+    public Page<AgendamentoResponseDTO> listarPorData(LocalDate data, Pageable pageable) {
+        // Define o intervalo do dia
         LocalDateTime inicio = data.atStartOfDay();
         LocalDateTime fim = data.atTime(LocalTime.MAX);
 
-        return agendamentoRepository.findByDataHoraBetween(inicio, fim);
+        // Busca no repositório passando o pageable e converte para DTO
+        return agendamentoRepository.findByDataHoraBetween(inicio, fim, pageable)
+                .map(AgendamentoResponseDTO::new);
     }
 }

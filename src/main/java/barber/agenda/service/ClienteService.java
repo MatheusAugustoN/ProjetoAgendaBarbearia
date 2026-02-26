@@ -1,5 +1,6 @@
 package barber.agenda.service;
 
+import barber.agenda.dto.ClienteResponseDTO;
 import barber.agenda.entity.Barbeiro;
 import barber.agenda.entity.Cliente;
 import barber.agenda.exception.BusinessException;
@@ -8,7 +9,8 @@ import barber.agenda.repository.ClienteRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import java.util.List;
 import java.util.Optional;
 
@@ -34,11 +36,13 @@ public class ClienteService {
         return repository.save(cliente);
     }
 
-    public List<Cliente> listarTodos() {
-        return repository.findAll();
+    public Page<ClienteResponseDTO> listarTodos(Pageable pageable) {
+        return repository.findAll(pageable)
+                .map(ClienteResponseDTO::new);
     }
+
     public Cliente buscarPorId(Long id) {
         return repository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Cliente não encontrado."));
+                .orElseThrow(() -> new BusinessException("Cliente com ID " + id + " não encontrado."));
     }
 }
