@@ -1,22 +1,18 @@
 package barber.agenda.controller;
 
-
 import barber.agenda.dto.BarbeiroRequestDTO;
 import barber.agenda.dto.BarbeiroResponseDTO;
 import barber.agenda.entity.Barbeiro;
 import barber.agenda.service.BarbeiroService;
-import barber.agenda.service.ClienteService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
+import org.springdoc.core.annotations.ParameterObject; // Importante para o Swagger
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page; // IMPORT CORRETO
+import org.springframework.data.domain.Pageable; // IMPORT CORRETO
+import org.springframework.data.web.PageableDefault; // Para definir valores padrão
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/barbeiros")
@@ -27,15 +23,9 @@ public class BarbeiroController {
 
     @PostMapping
     public ResponseEntity<BarbeiroResponseDTO> cadastrar(@RequestBody @Valid BarbeiroRequestDTO dto) {
-        // 1. Converte RequestDTO -> Entity (pode fazer aqui ou no Service)
         Barbeiro barbeiro = new Barbeiro();
         barbeiro.setNome(dto.nome());
-
-
-        // 2. Chama o Service
         Barbeiro barbeiroSalvo = service.cadastrar(barbeiro);
-
-        // 3. Retorna o ResponseDTO usando o construtor inteligente que criamos
         return ResponseEntity.status(HttpStatus.CREATED).body(new BarbeiroResponseDTO(barbeiroSalvo));
     }
 
@@ -45,14 +35,13 @@ public class BarbeiroController {
         return ResponseEntity.ok(new BarbeiroResponseDTO(barbeiro));
     }
 
+    // MUDANÇA AQUI: Agora retorna Page e recebe Pageable
     @GetMapping
-    public ResponseEntity<List<BarbeiroResponseDTO>> listarTodos() {
-        List<Barbeiro> barbeiros = service.listarTodos();
+    public ResponseEntity<Page<BarbeiroResponseDTO>> listarTodos(
+            @ParameterObject @PageableDefault(size = 10, sort = "nome") Pageable pageable) {
 
-        // Converte a lista de entidades para lista de DTOs usando Stream
-        List<BarbeiroResponseDTO> dtos = barbeiros.stream()
-                .map(BarbeiroResponseDTO::new)
-                .toList();
+        // O Service agora deve retornar Page<BarbeiroResponseDTO>
+        Page<BarbeiroResponseDTO> dtos = service.listarTodos(pageable);
 
         return ResponseEntity.ok(dtos);
     }
