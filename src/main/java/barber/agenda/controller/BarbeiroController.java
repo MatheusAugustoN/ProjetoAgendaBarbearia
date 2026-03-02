@@ -40,7 +40,7 @@ public class BarbeiroController {
     public ResponseEntity<Page<BarbeiroResponseDTO>> listarTodos(
             @ParameterObject @PageableDefault(size = 10, sort = "nome") Pageable pageable) {
 
-        // O Service agora deve retornar Page<BarbeiroResponseDTO>
+
         Page<BarbeiroResponseDTO> dtos = service.listarTodos(pageable);
 
         return ResponseEntity.ok(dtos);
