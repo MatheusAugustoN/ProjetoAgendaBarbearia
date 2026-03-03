@@ -18,6 +18,16 @@ O sistema resolve o problema de conciliação de agendas entre barbeiros e clien
 * **Lombok** (Produtividade/Código limpo)
 * **SpringDoc OpenAPI** (Documentação via Swagger)
 * **Bean Validation** (Validação de dados de entrada)
+* **JUnit 5 & Mockito** (Testes unitários e mocks)
+
+🧪 Testes Unitários
+O projeto conta com uma suíte de testes para garantir a integridade da lógica de negócio, utilizando Mockito para isolamento de dependências.
+
+Para rodar os testes:
+
+Bash
+mvn test
+Os testes validam cenários como: cadastro de clientes, validação de CPFs duplicados e fluxos de agendamento.
 
 ## 🗂 Arquitetura
 
@@ -52,10 +62,25 @@ docker-compose up --build
 
 ```
 
+🌐 Deploy Real
+A API está online e pode ser testada através dos links abaixo:
 
-*Este comando irá baixar as imagens, compilar o código Java e subir o banco de dados automaticamente.*
-3. **Acesse a documentação:**
-Abra o navegador em: `http://localhost:8080/swagger-ui/index.html`
+Swagger UI (Documentação): https://projetoagendabarbearia.onrender.com/swagger-ui/index.html
+
+Base URL: https://projetoagendabarbearia.onrender.com
+
+🔐 Como Utilizar a API
+Acesse o Swagger no link acima.
+
+Autenticação:
+
+Use as credenciais padrão: admin / admin123.
+
+Copie o token gerado no retorno do login.
+
+Clique no botão Authorize no topo do Swagger e cole o token: Bearer SEU_TOKEN_AQUI.
+
+Fluxo: Cadastre um Barbeiro -> Cadastre um Cliente -> Realize um Agendamento.
 
 ---
 
@@ -107,16 +132,3 @@ A API utiliza as seguintes entidades principais:
 * **Cliente**: Cadastro de usuários do serviço.
 * **Agendamento**: Vincula cliente, barbeiro e horário.
 
----
-
-## 👤 Usuário de Teste
-
-Para facilitar o primeiro acesso:
-
-* **Usuário:** `admin`
-* **Senha:** `admin123`
-*(Certifique-se de executar o cadastro inicial se o banco estiver vazio)*
-
----
-
-Este README está completo? Se precisar, posso adicionar uma seção sobre como rodar os testes unitários com **JUnit 5** e **Mockito**!
